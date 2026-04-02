@@ -2,13 +2,6 @@
 FROM postgres:16-alpine
 
 
-# Variables d'environnement par défaut (peuvent être override)
-ENV POSTGRES_DB=app_db \
-    POSTGRES_USER=app_user \
-    POSTGRES_PASSWORD=secure_password
-
-# Copier les scripts d'initialisation
-# (création de tables, extensions, etc.)
 COPY ./init /docker-entrypoint-initdb.d/
 
 # Copier config custom (optionnel)
