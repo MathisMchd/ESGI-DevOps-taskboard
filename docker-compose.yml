@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  postgres:
+    build: .
+    container_name: postgres_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # Persistance des données
+      - postgres_data:/var/lib/postgresql/data
+      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - backend
+
+    # Limites de ressources (bonne pratique)
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
