@@ -1,17 +1,15 @@
-# Stage 1 — Build (dev + compilation)
-
+# Stage 1 — Builder (installation dépendances)
 FROM node:20-alpine AS builder
 
 # Créer un utilisateur non-root pour le build
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier package.json et package-lock.json en premier pour tirer parti du cache
+# Copier package.json et package-lock.json pour profiter du cache Docker
 COPY package*.json ./
 
-# Installer les dépendances (prod + dev pour build)
+# Installer les dépendances
 RUN npm ci
 
 # Copier le reste du code source
@@ -25,11 +23,11 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Copier uniquement les dépendances prod du stage builder
+# Copier uniquement les dépendances du stage builder
 COPY --from=builder /app/node_modules ./node_modules
 # Copier le code source
-COPY --from=builder /app ./
-
+COPY --from=builder /app ./ 
+    
 # Changer l'utilisateur pour éviter d'exécuter en root
 USER appuser
 
@@ -41,4 +39,4 @@ HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 
 # Commande par défaut
-CMD ["node", "dist/index.js"]
+CMD ["node", "src/server.js"]

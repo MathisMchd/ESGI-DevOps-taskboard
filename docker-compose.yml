@@ -4,7 +4,7 @@ services:
   postgres:
     build:
       context: .
-      dockerfile: Dockerfile.postgres
+      dockerfile: Dockerfile.bd
     container_name: postgres_db
     restart: unless-stopped
     environment:
@@ -39,8 +39,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       DB_NAME: ${POSTGRES_DB}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}

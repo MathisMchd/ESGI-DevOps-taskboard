@@ -2,7 +2,7 @@
 FROM postgres:16-alpine
 
 # Copier scripts d'initialisation
-COPY ./init /docker-entrypoint-initdb.d/
+COPY ./db /docker-entrypoint-initdb.d/
 
 COPY ./postgresql.conf /etc/postgresql/postgresql.conf
 
