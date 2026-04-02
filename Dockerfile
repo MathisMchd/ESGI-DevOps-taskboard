@@ -1,14 +1,16 @@
 # Image officielle légère
 FROM postgres:16-alpine
 
-
+# Copier scripts d'initialisation
 COPY ./init /docker-entrypoint-initdb.d/
 
-# Copier config custom (optionnel)
 COPY ./postgresql.conf /etc/postgresql/postgresql.conf
 
-# Exposer le port PostgreSQL
+
 EXPOSE 5432
 
-# Commande custom avec config
+# Santé du conteneur via pg_isready
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
+  CMD pg_isready -U ${POSTGRES_USER} || exit 1
+
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

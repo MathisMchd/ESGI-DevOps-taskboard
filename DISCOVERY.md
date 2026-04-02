@@ -90,3 +90,52 @@ Pour la suite je connaissais pas ducoup j'ai cherché sur internet et j'ai deman
   - **Avantages** : rotation automatique, audit, contrôle d’accès fin.  
   - **Limitations** : déploiement et maintenance complexes.  
   - **Usage adapté** : grandes équipes, microservices, infra critique.
+
+
+# Conteneurisation 
+
+## Pourquoi conteneuriser une application Node.js ?
+Isolation complète du runtime et des dépendances
+Reproductibilité sur toutes les environnements (dev, test, prod)
+Déploiement simplifié et scalabilité avec orchestrateurs comme Docker Compose ou Kubernetes
+## Qu'est-ce que le concept de « build reproductible » et pourquoi est-il important ?
+C’est un build dont le résultat est identique quel que soit l’environnement ou le moment.
+Important pour traçabilité, CI/CD, et sécurité (aucune surprise dans les dépendances ou fichiers générés).
+
+## Quelle est la différence entre une image de développement et une image de production ?
+
+| Caractéristique |	Dev | Prod | 
+|-----------------|-----|------|
+|Taille	| Légère moins prioritaire	| Optimisée |
+|Outils inclus	| Node/npm, debugger, live reload	| Juste runtime |
+|Dépendances | 	Dev + prod	| Prod uniquement |
+|Variables d’environnement |	Débogage activé	| Secrets sécurisés |
+
+
+
+## Solutions à identifier et comparer
+
+### Choix de l’image de base Node.js :
+
+- node:20 → complète, grande, pratique pour dev
+- node:20-alpine → plus légère, bonne pour prod, mais certains packages natifs peuvent poser problème
+- node:20-slim → compromis sécurité/taille
+- gcr.io/distroless/nodejs20 → très sécurisée, pas de shell, minimaliste, parfaite pour prod
+
+### Stratégie de build :
+
+- Single-stage : simple mais image plus lourde
+- Multi-stage : compile/build dans une étape, runtime minimal dans l’autre → image plus légère et sécurisée avec les fichiers strictmenent nécesssaire
+
+### Sécurité :
+
+- Ne pas exécuter le conteneur en root, créer un utilisateur dédié
+- Mettre le système de fichiers en lecture seule si possible
+- Ajouter HEALTHCHECK pour vérifier la disponibilité du service
+- Épingler les versions (node:20-alpine, postgres:16-alpine)
+
+### Gestion des dépendances Node :
+
+- npm ci pour des builds reproductibles
+- Exclure les devDependencies dans l’image de production
+- Utiliser le cache Docker pour éviter de réinstaller inutilement
