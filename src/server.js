@@ -38,7 +38,6 @@ const initDb = async () => {
       'INSERT INTO users (username, password) VALUES ($1, $2)',
       ['admin', hashedPassword]
     );
-    console.log('Default user created — username: admin, password: admin123');
   }
 
   console.log('Database initialized successfully');
