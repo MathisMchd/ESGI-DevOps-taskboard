@@ -40,6 +40,7 @@ const initDb = async () => {
     );
   }
 
+  
   console.log('Database initialized successfully');
 };
 
