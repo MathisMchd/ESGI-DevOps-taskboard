@@ -40,7 +40,7 @@ Dans le code il y a plusieurs problèmes de sécurités notamment :
 
 
 
-# Gestion des secret 
+# 1 - Gestion des secret 
 
 ## Analyse du problème
 Un secret est une information sensible pour sécuriser l’app (JWT_SECRET, mots de passe, clés API).  
@@ -92,17 +92,21 @@ Pour la suite je connaissais pas ducoup j'ai cherché sur internet et j'ai deman
   - **Usage adapté** : grandes équipes, microservices, infra critique.
 
 
-# Conteneurisation 
+# 2 - Conteneurisation 
 
 ## Pourquoi conteneuriser une application Node.js ?
+
 Isolation complète du runtime et des dépendances
 Reproductibilité sur toutes les environnements (dev, test, prod)
 Déploiement simplifié et scalabilité avec orchestrateurs comme Docker Compose ou Kubernetes
+
 ## Qu'est-ce que le concept de « build reproductible » et pourquoi est-il important ?
+
 C’est un build dont le résultat est identique quel que soit l’environnement ou le moment.
 Important pour traçabilité, CI/CD, et sécurité (aucune surprise dans les dépendances ou fichiers générés).
 
 ## Quelle est la différence entre une image de développement et une image de production ?
+
 
 | Caractéristique |	Dev | Prod | 
 |-----------------|-----|------|
@@ -139,3 +143,117 @@ Important pour traçabilité, CI/CD, et sécurité (aucune surprise dans les dé
 - npm ci pour des builds reproductibles
 - Exclure les devDependencies dans l’image de production
 - Utiliser le cache Docker pour éviter de réinstaller inutilement
+
+
+## Mise en place
+
+La taille de l'image est < 300Mo
+![Taille image docker](image-1.png)
+
+On est pas en root : 
+![alt text](image-2.png)
+
+Le conteneur est visiblement healthy 
+![alt text](image-3.png)
+
+
+
+# 3 - Tests automatisés
+
+
+## Pyramide des tests et types de tests
+
+###  Qu'est-ce que la pyramide des tests ?
+La **pyramide des tests** c'est une représentation des différents types de tests dans une application.
+
+1. **Tests unitaires (base)**  
+   - Très nombreux  
+   - Rapides à exécuter  
+   - Testent une fonction ou une classe isolée  
+
+2. **Tests d'intégration (milieu)**  
+   - Moins nombreux  
+   - Testent l'interaction entre plusieurs composants  
+   - Exemple : service + base de données  
+
+3. **Tests end-to-end (sommet)**  
+   - Peu nombreux  
+   - Lents et plus coûteux  
+   - Simulent un scénario utilisateur complet  
+
+
+
+### Différence entre test unitaire, intégration et end-to-end
+
+Test unitaire
+- Teste du code spécifique (fonction)
+- Dépendances mockées
+
+Test d'intégration
+- Teste les interractions entre plusieurs classes/modules
+- On peut utiliser une vraie base de données ou API
+
+Test End-to-End (E2E)
+- Tests de bout en bout comme en utilisation rééelle (complétion de formulaire, cliquer sur un bouton etc)
+
+## Couverture de code
+
+### Qu'est-ce que la couverture de code ? Est-ce suffisant pour juger la qualité ?
+
+La couverture de code (code coverage) mesure le pourcentage du code exécuté par les tests.
+Cela ne garantit pas que le code est correct.
+Les tests peuvent être mal écris ou non complets (cas limites non fait etc)
+
+
+## Tester une API REST 
+
+### Comment tester une API REST ? Quels outils existent pour ça ?
+
+Tester une API REST consiste à vérifier :
+- les **codes de retour HTTP** (200, 404, 500…)
+- la **structure des réponses JSON**
+- les **données retournées**
+- l’**authentification**
+- la **gestion des erreurs**
+
+
+Outils courants
+- **Manuels** : Postman, curl  
+- **Automatisés** : Jest + Supertest, Pytest, JUnit + RestAssured  
+- **E2E** : Newman, Karate, Cypress
+
+
+## Exploration de l'existant
+
+```bash
+npm test
+npm run test:coverage
+npm run lint
+```
+
+Les méthodes basiques `findAll`, `findById`, `create` et `delete` des tasks sont testées.
+Cependant, certaines routes comme `PUT /tasks/:id` et `DELETE /tasks/:id` ne sont pas testées, entre autres.
+Il manque également des tests sur les cas limites, comme la validation des inputs (paramètre vide, statut invalide, injection).
+Les middleware ne sont pas testés, tout comme la gestion du JWT et, plus généralement, l’authentification.
+
+### Tests : Avant vs Après
+
+| Métrique        | Avant   | Après   |
+|----------------|--------|--------|
+| **Tests**      | 16     | 27     |
+| **Statements** | 63.85% | 72.28% |
+| **Branches**   | 53.12% | 62.5%  |
+| **Functions**  | 50%    | 62.5%  |
+| **Lines**      | 63.85% | 72.28% |
+
+
+### Tests supplémentaires ajoutés
+J'ai réalisé les trois types de tests afin de couvrir les trois niveaux de test (TU, TI, E2E). Bien évidemment, d'autres tests sont plus importants, comme la vérification des droits de modification ou encore la validation des entrées, car ce sont des points sensibles de l'application.
+
+1. **`PUT /tasks/:id`** (intégration) - Mise à jour de tâche 
+2. **`Task.findByStatus()`** (unitaire) - Filtrage par status
+3. **`auth.js`** (middleware) - Teste la validité du token (tres important) 
+
+
+![Code coverage](image-5.png)
+

@@ -112,4 +112,66 @@ describe('POST /tasks', () => {
     expect(res.body.title).toBe('New Task');
     expect(res.body.status).toBe('todo');
   });
+
+  test('should return 401 without authentication', async () => {
+    const newTask = { title: 'New Task', description: 'Description' };
+
+    const res = await request(app)
+      .post('/tasks')
+      .send(newTask);
+
+    expect(res.status).toBe(401);
+  });
 });
+
+describe('GET /tasks with status filter', () => {
+  test('should filter tasks by status', async () => {
+    const mockTasks = [
+      { id: 1, title: 'Task 1', status: 'done' },
+      { id: 2, title: 'Task 2', status: 'done' },
+    ];
+    pool.query.mockResolvedValue({ rows: mockTasks });
+
+    const token = generateToken();
+    const res = await request(app)
+      .get('/tasks?status=done')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body.every((task) => task.status === 'done')).toBe(true);
+    expect(pool.query).toHaveBeenCalledWith(
+      "SELECT * FROM tasks WHERE status = 'done'"
+    );
+  });
+
+  test('should return empty list when no tasks match the filter', async () => {
+    pool.query.mockResolvedValue({ rows: [] });
+
+    const token = generateToken();
+    const res = await request(app)
+      .get('/tasks?status=in-progress')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(0);
+  });
+});
+
+describe('PUT /tasks/:id', () => {
+  test('should update a task and return 200', async () => {
+    const updateData = { title: 'Updated Task', description: 'Updated', status: 'done' };
+    const mockResult = { id: 1, ...updateData, updated_at: '2026-04-28' };
+    pool.query.mockResolvedValue({ rows: [mockResult] });
+
+    const token = generateToken();
+    const res = await request(app)
+      .put('/tasks/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send(updateData);
+
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('Updated Task');
+  });
+});
+
