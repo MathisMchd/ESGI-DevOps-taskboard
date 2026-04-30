@@ -257,3 +257,83 @@ J'ai réalisé les trois types de tests afin de couvrir les trois niveaux de tes
 
 ![Code coverage](image-5.png)
 
+
+
+# 4 - Pipeline CI : intégration continue
+
+## CI / CD —Analyse du problème
+
+### 1 - Quelle est la différence entre CI (Intégration Continue) et CD (Déploiement Continu) ?
+
+- **CI (Intégration Continue)** : à chaque push, on automatise les étapes de vérification (tests, lint, build). (Vérification)
+- **CD (Déploiement Continu)** : on automatise la mise en production après validation des tests. (Livraison)
+
+
+### 2 - Qu'est-ce qu'un runner GitHub Actions ? Où s'exécute-t-il ?
+
+Un **runner GitHub Actions** est une machine qui exécute les workflows (tests, build, etc..).
+
+- Il peut être **hébergé par GitHub** dans le cloud ou **auto-hébergé** sur ma machine par exemple
+- Il exécute les jobs dans un environnement isolé (Linux, Windows, etc.)
+
+
+### 3 - Qu'est-ce qu'un artefact de pipeline ? Dans quels cas est-il utile ?
+
+Un **artefact** est un fichier généré par un job et conservé pour plus tard.
+Cela peut être une image DOcker, un client typeScript généré à partir du code (build) ou encore des résultats de tests
+
+
+### 4 - Comment les jobs peuvent-ils dépendre les uns des autres ?
+Les jobs peuvent s’enchaîner grâce au `needs` dans le fichier `yml`.
+Cela indique si la pjhase de job doit se lancer ou non.
+
+Exemple :
+- Job 1 : tests
+- Job 2 : build (si tests OK)
+- Job 3 : déploiement (si build OK)
+
+
+
+
+
+# Comparaison des outils CI/CD et registries Docker
+
+##  Solution à identifier et comparer
+
+| Critère | GitHub Actions | GitLab CI | CircleCI |
+|----------|---------------|------------|-----------|
+| **Prix (public)** | Gratuit | Gratuit | Gratuit limité |
+| **Syntaxe** | YAML simple | YAML puissant | YAML + config avancée |
+| **Écosystème** | Très riche (marketplace d’actions) | Intégré à GitLab | Bon mais plus limité |
+| **Courbe d’apprentissage** | Facile | Moyenne | Moyenne à difficile |
+
+
+- **GitHub Actions** : le plus simple et intégré à GitHub → idéal pour ce TP
+- **GitLab CI** : très puissant mais plus complexe
+- **CircleCI** : performant mais moins intégré à l’écosystème GitHub
+
+Pour ce TP **GitHub Actions est le plus pertinent** car c'est le plus simple à utiliser et il existe pas mal d'action prêt à l'emploi.
+
+---
+
+### Comparaison des Docker Registries
+
+#### GitHub Container Registry (GHCR)
+- Intégré à GitHub
+- Gestion des permissions via GitHub
+
+#### Docker Hub
+- Le plus connu
+- Facile à utiliser
+- Moins intégré aux workflows GitHub mais ducoup séparé de github
+
+#### Amazon ECR / GCP Artifact Registry
+- Très robuste (cloud enterprise)
+- Payant et plus complexe
+- Idéal pour production cloud
+
+
+
+## Conclusion 
+
+GitHub Container Registry (GHCR) est le mieux à utiliser dans notre contexte car il est déjà intégré à GitHub Actions. Il est gratuit et simple à utiliser.
