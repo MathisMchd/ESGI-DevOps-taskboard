@@ -296,9 +296,9 @@ Exemple :
 
 
 
-# Comparaison des outils CI/CD et registries Docker
+## Comparaison des outils CI/CD et registries Docker
 
-##  Solution à identifier et comparer
+###  Solution à identifier et comparer
 
 | Critère | GitHub Actions | GitLab CI | CircleCI |
 |----------|---------------|------------|-----------|
@@ -316,24 +316,29 @@ Pour ce TP **GitHub Actions est le plus pertinent** car c'est le plus simple à 
 
 ---
 
-### Comparaison des Docker Registries
+## Comparaison des Docker Registries
 
-#### GitHub Container Registry (GHCR)
+### GitHub Container Registry (GHCR)
 - Intégré à GitHub
 - Gestion des permissions via GitHub
 
-#### Docker Hub
+### Docker Hub
 - Le plus connu
 - Facile à utiliser
 - Moins intégré aux workflows GitHub mais ducoup séparé de github
 
-#### Amazon ECR / GCP Artifact Registry
+### Amazon ECR / GCP Artifact Registry
 - Très robuste (cloud enterprise)
 - Payant et plus complexe
 - Idéal pour production cloud
 
 
 
-## Conclusion 
+### Conclusion 
 
 GitHub Container Registry (GHCR) est le mieux à utiliser dans notre contexte car il est déjà intégré à GitHub Actions. Il est gratuit et simple à utiliser.
+
+
+
+
+##
