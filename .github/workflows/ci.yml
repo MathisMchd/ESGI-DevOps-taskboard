@@ -72,7 +72,7 @@ jobs:
           context: .
           file: ./Dockerfile.node
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository.toLower() }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -90,4 +90,4 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           script: |
             chmod +x /home/deploy/deploy.sh
-            /home/deploy/deploy.sh ghcr.io/${{ github.repository }}:${{ github.sha }}
+            /home/deploy/deploy.sh ghcr.io/${{ github.repository.toLower() }}:${{ github.sha }}
