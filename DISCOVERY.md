@@ -505,3 +505,7 @@ Comparaison des principales solutions pour exposer un service local derrière NA
 Ici en TP on a juste besoin de quelque chose de rapide pour pouvoir tester
 
 
+
+<br>
+
+Pour le reste du déploiement, j'ai des permission refused. J'ai essayé avec localhost.run mais cela fonctionne pas il me donne pas l'url a mettre dans les secret pour le TUNNEL_HOST.
