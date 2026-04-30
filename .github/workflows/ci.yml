@@ -83,7 +83,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
+
     steps:
+      - name: Set lowercase repo name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -93,4 +97,4 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           script: |
             chmod +x /home/deploy/deploy.sh
-            /home/deploy/deploy.sh ghcr.io/${{  env.REPO_LC }}:${{ github.sha }}
+            /home/deploy/deploy.sh ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}
