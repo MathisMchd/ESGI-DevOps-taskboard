@@ -1,0 +1,29 @@
+FROM alpine:latest
+
+# Install OpenSSH and Docker CLI
+RUN apk add --no-cache openssh docker-cli
+
+# Create SSH user
+RUN adduser -D -s /bin/sh deploy
+
+# Generate SSH host keys
+RUN ssh-keygen -A
+
+# Configure SSH
+RUN echo 'PermitRootLogin no' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config && \
+    echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config && \
+    echo 'AuthorizedKeysFile .ssh/authorized_keys' >> /etc/ssh/sshd_config
+
+# Create .ssh directory
+RUN mkdir -p /home/deploy/.ssh && \
+    chown deploy:deploy /home/deploy/.ssh && \
+    chmod 700 /home/deploy/.ssh
+
+# Copy entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 22
+
+CMD ["/entrypoint.sh"]

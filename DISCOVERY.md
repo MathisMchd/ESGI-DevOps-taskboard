@@ -341,4 +341,167 @@ GitHub Container Registry (GHCR) est le mieux à utiliser dans notre contexte ca
 
 
 
-##
+# 5 — Déploiement local via SSH
+
+
+## Analyse du problème 
+
+
+### 1 - Comment GitHub Actions peut-il se connecter à une machine locale derrière un NAT ?
+
+GitHub Actions ne peut pas accéder directement à une machine derrière un NAT, car celle-ci n’est pas exposée sur Internet. On utilise donc des **connexions sortantes** :
+
+- **Self-hosted runner** : la machine locale exécute un agent GitHub Actions et se connecte elle-même à GitHub.
+- **Tunnel sortant (SSH, VPN, ngrok, cloudflared)** : la machine ouvre un canal vers un serveur public.
+- **Reverse SSH tunnel** : redirection d’un port local vers une machine distante via une connexion sortante.
+
+
+### 2 -  Qu'est-ce qu'un tunnel SSH ? Comment fonctionne le port forwarding inversé (`-R`) ?
+
+Un **tunnel SSH** transporte du trafic réseau à travers une connexion SSH chiffrée.
+
+#### Port forwarding inversé (`-R`)
+Permet d’exposer un service local vers une machine distante.
+
+```bash
+ssh -R 8080:localhost:3000 user@serveur
+```
+- Le serveur distant écoute sur 8080
+- Le trafic est redirigé vers localhost:3000 sur la machine locale
+
+### 3 - Qu'est-ce qu'un déploiement idempotent ? Pourquoi est-ce important ?
+
+Un déploiement idempotent produit toujours le même état final, même s’il est exécuté plusieurs fois.
+
+Exemple :
+ - OK : vérifier avant installation
+ - KO : réinstaller sans contrôle → effets de bord
+
+Importance :
+ - évite les incohérences d’état
+ - rend les déploiements reproductibles
+ - permet de relancer sans risque
+ - facilite CI/CD et automatisation
+
+### 4 - Qu'est-ce qu'un healthcheck post-déploiement ? Que doit-il vérifier ?
+
+Un healthcheck post-déploiement vérifie automatiquement que l’application fonctionne après mise en production.
+
+Il doit contrôler :
+ - disponibilité du service (/health)
+ - temps de réponse acceptable
+ - dépendances (DB, cache, API externes)
+ - absence d’erreurs critiques au démarrage
+ - exécution basique d’une requête fonctionnelle
+
+Objectif :
+ - détecter rapidement un déploiement cassé
+ - déclencher un rollback si nécessaire
+ - garantir la stabilité du service
+
+
+## Solutions à identifier et comparer
+
+
+### Outils de tunnel SSH
+
+Comparaison des principales solutions pour exposer un service local derrière NAT en TP.
+
+#### ngrok (tier gratuit)
+
+- Installation : nécessaire (binaire + compte)
+- Fonctionnement : tunnel via client local vers infrastructure cloud
+- URL : aléatoire sur la version gratuite
+- Durée de session : limitée (sessions non garanties stables sur free tier)
+- Compte : obligatoire
+- Fiabilité : élevée (infrastructure mature)
+- Contraintes :
+  - quotas/bande passante
+  - restrictions sur le plan gratuit
+  - dépendance forte au service externe
+
+==>  Très simple mais limité pour usage gratuit prolongé.
+
+#### localhost.run
+
+- Installation : aucune (SSH natif uniquement)
+- Fonctionnement : tunnel SSH inversé public
+- URL : généralement change à chaque connexion
+- Durée de session : non garantie (usage “éphémère”)
+- Compte : non requis
+- Fiabilité : correcte mais variable (service communautaire)
+- Contraintes :
+  - peu de fonctionnalités avancées
+  - pas de dashboard ni monitoring
+  - uniquement HTTP/HTTPS
+
+==> Très pratique pour tests rapides sans installation 
+
+
+#### Cloudflare Tunnel (cloudflared)
+
+- Installation : client `cloudflared`
+- Fonctionnement : tunnel sortant vers Cloudflare edge
+- URL : stable si configuré avec domaine Cloudflare
+- Durée de session : stable et persistante
+- Compte : requis (Cloudflare)
+- Fiabilité : très élevée (infrastructure Cloudflare)
+- Contraintes :
+  - configuration initiale plus complexe
+  - nécessite gestion DNS (souvent via Cloudflare)
+  - dépendance à un écosystème cloud
+
+==> Solution la plus robuste et pro
+
+#### Pinggy
+
+- Installation : aucune ou très légère (commande SSH)
+- Fonctionnement : tunnel SSH simplifié vers service cloud
+- URL : dynamique (selon session)
+- Durée de session : variable selon plan
+- Compte : optionnel ou léger selon usage
+- Fiabilité : bonne
+- Contraintes :
+  - certaines fonctions payantes
+  - limites sur usage gratuit
+  - moins standard que Cloudflare/ngrok
+
+==> Bon compromis simplicité / fonctionnalités
+
+#### serveo.net
+
+- Installation : aucune (SSH uniquement)
+- Fonctionnement : reverse SSH tunnel public
+- URL : change à chaque session (sauf sous-domaines demandés)
+- Durée de session : non garantie
+- Compte : non requis
+- Fiabilité : faible à moyenne (service connu pour instabilité)
+- Contraintes :
+  - service parfois indisponible
+  - pas de SLA
+  - peu de fonctionnalités
+
+==> Solution historique mais peu fiable aujourd’hui :contentReference[oaicite:3]{index=3}
+
+### Synthèse comparative (TP)
+
+#### Solutions les plus adaptées en TP
+- Cloudflare Tunnel → le plus stable et professionnel
+- localhost.run → le plus simple sans installation
+- ngrok → le plus pédagogique mais limité en gratuit
+
+#### Solutions plus “light / rapides”
+- Pinggy → bon équilibre simplicité / fonctionnalités
+- serveo → uniquement pour tests rapides non critiques
+
+
+## Conclusion
+
+- **Stabilité / production-like** → Cloudflare Tunnel  
+- **Simplicité extrême** → localhost.run ou SSH natif  
+- **Usage pédagogique classique** → ngrok  
+- **Tests rapides jetables** → serveo / Pinggy  
+
+Ici en TP on a juste besoin de quelque chose de rapide pour pouvoir tester
+
+

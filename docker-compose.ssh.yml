@@ -1,0 +1,14 @@
+
+services:
+  ssh-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.ssh
+    ports:
+      - "2222:22"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./deploy.sh:/home/deploy/deploy.sh:ro
+    environment:
+      SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
+    restart: unless-stopped
